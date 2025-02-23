@@ -38,3 +38,20 @@ ENV PATH="$PATH:/opt/cmake/bin"
 # Run regression checks to make sure things work.
 # && cmake --build /opt/llvm/build --target check-llvm --parallel \
 # && cmake --build /opt/llvm/build --target install --parallel
+
+# Create a non-root user with sudo
+ARG USERNAME=user
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+# 23.04 and onward introduces a non-root user called ubuntu that already uses
+# the default UID. Delete it. One could just specify a different UID for the
+# new user, but it causes issues when mounting WSL files/folders.
+RUN userdel -r ubuntu \
+    && groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME \
+    && rm -rf /var/lib/apt/lists/*
+USER $USERNAME

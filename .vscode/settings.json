@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
         "autoremove",
-        "noninteractive"
+        "noninteractive",
+        "NOPASSWD",
+        "userdel"
     ]
 }
