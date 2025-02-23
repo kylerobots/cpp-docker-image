@@ -30,14 +30,22 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 ENV PATH="$PATH:/opt/cmake/bin"
 
-# Install a specific LLVM version
-# ARG LLVM_VERSION=llvmorg-19.1.7
-# # RUN ls /opt/cmake
-# RUN git clone --depth 1 --branch ${LLVM_VERSION} https://github.com/llvm/llvm-project.git /opt/llvm \
-#     && cmake -S /opt/llvm/llvm -B /opt/llvm/build -G Ninja -D CMAKE_BUILD_TYPE=Release -D LLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lldb;lld" \
-# Run regression checks to make sure things work.
-# && cmake --build /opt/llvm/build --target check-llvm --parallel \
-# && cmake --build /opt/llvm/build --target install --parallel
+# Download a specific LLVM version to /opt/llvm and update the PATH.
+ARG LLVM_VERSION=19.1.7
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    curl \
+    xz-utils \
+    && curl -sSL "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/LLVM-${LLVM_VERSION}-Linux-X64.tar.xz" -O \
+    && tar xf LLVM-${LLVM_VERSION}-Linux-X64.tar.xz \
+    && mv LLVM-${LLVM_VERSION}-Linux-X64 /opt/llvm \
+    && rm LLVM-${LLVM_VERSION}-Linux-X64.tar.xz \
+    && apt-get purge -y \
+    curl \
+    xz-utils \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+ENV PATH="$PATH:/opt/llvm/bin"
 
 # Create a non-root user with sudo
 ARG USERNAME=user
